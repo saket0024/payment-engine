@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOLID + 12 Design Patterns — Payment Platform Cheat Sheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --bg2: #13161d;
+    --bg3: #1a1e28;
+    --border: #2a2f3d;
+    --text: #c9cdd6;
+    --text2: #8b93a5;
+    --white: #eef0f4;
+    --accent: #6c8cff;
+    --accent2: #4a6bff;
+    --green: #4ade80;
+    --green-dim: #1a3a2a;
+    --orange: #fb923c;
+    --orange-dim: #3a2a1a;
+    --purple: #a78bfa;
+    --purple-dim: #2a1a3a;
+    --pink: #f472b6;
+    --pink-dim: #3a1a2a;
+    --cyan: #22d3ee;
+    --cyan-dim: #1a2a3a;
+    --yellow: #facc15;
+    --yellow-dim: #2a2a1a;
+    --red: #f87171;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.5;
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.5px;
+  }
+  .header .sub {
+    color: var(--text2);
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  .header .tag-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+  .tag-green  { color: var(--green);  border-color: var(--green);  background: var(--green-dim); }
+  .tag-orange { color: var(--orange); border-color: var(--orange); background: var(--orange-dim); }
+  .tag-purple { color: var(--purple); border-color: var(--purple); background: var(--purple-dim); }
+  .tag-pink   { color: var(--pink);   border-color: var(--pink);   background: var(--pink-dim); }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 36px;
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(108,140,255,0.12);
+    border: 1px solid rgba(108,140,255,0.3);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  /* ── SOLID Grid ── */
+  .solid-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 900px) {
+    .solid-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .solid-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .solid-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .solid-card.s::before { background: var(--green); }
+  .solid-card.o::before { background: var(--orange); }
+  .solid-card.l::before { background: var(--purple); }
+  .solid-card.i::before { background: var(--cyan); }
+  .solid-card.d::before { background: var(--pink); }
+
+  .solid-letter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .solid-card.s .solid-letter { color: var(--green); }
+  .solid-card.o .solid-letter { color: var(--orange); }
+  .solid-card.l .solid-letter { color: var(--purple); }
+  .solid-card.i .solid-letter { color: var(--cyan); }
+  .solid-card.d .solid-letter { color: var(--pink); }
+
+  .solid-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--white);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .solid-desc {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  .solid-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(108,140,255,0.08);
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(108,140,255,0.15);
+    display: block;
+  }
+  .solid-interview {
+    font-size: 11px;
+    color: var(--yellow);
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* ── Pattern Grid ── */
+  .pattern-section {
+    margin-bottom: 32px;
+  }
+  .pattern-section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .pattern-section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 4px;
+  }
+  .creational .pattern-section-label  { color: var(--green);  background: var(--green-dim);  border: 1px solid rgba(74,222,128,0.3); }
+  .structural .pattern-section-label  { color: var(--orange); background: var(--orange-dim); border: 1px solid rgba(251,146,60,0.3); }
+  .behavioral .pattern-section-label  { color: var(--purple); background: var(--purple-dim); border: 1px solid rgba(167,139,250,0.3); }
+
+  .pattern-section-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .patterns-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 900px) {
+    .patterns-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .p-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    transition: border-color 0.2s;
+  }
+  .p-card:hover { border-color: var(--accent); }
+
+  .p-card .p-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text2);
+    margin-bottom: 4px;
+  }
+  .p-card .p-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 2px;
+  }
+  .p-card .p-class {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .p-card .p-what, .p-card .p-why {
+    font-size: 11.5px;
+    color: var(--text2);
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .p-card .p-what strong, .p-card .p-why strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .p-card .p-interview {
+    font-size: 11px;
+    color: var(--yellow);
+    background: var(--yellow-dim);
+    border: 1px solid rgba(250,204,21,0.2);
+    padding: 6px 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  /* ── Flow Diagram ── */
+  .flow-container {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    overflow-x: auto;
+  }
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+  .flow-box {
+    padding: 10px 14px;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 130px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid;
+    position: relative;
+  }
+  .flow-box .flow-pattern {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    display: block;
+    margin-top: 3px;
+    opacity: 0.8;
+  }
+  .flow-arrow {
+    font-size: 18px;
+    color: var(--text2);
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .fb-green  { background: var(--green-dim);  border-color: rgba(74,222,128,0.4);  color: var(--green); }
+  .fb-orange { background: var(--orange-dim); border-color: rgba(251,146,60,0.4);  color: var(--orange); }
+  .fb-purple { background: var(--purple-dim); border-color: rgba(167,139,250,0.4); color: var(--purple); }
+  .fb-cyan   { background: var(--cyan-dim);   border-color: rgba(34,211,238,0.4);  color: var(--cyan); }
+  .fb-pink   { background: var(--pink-dim);   border-color: rgba(244,114,182,0.4); color: var(--pink); }
+  .fb-yellow { background: var(--yellow-dim); border-color: rgba(250,204,21,0.4);  color: var(--yellow); }
+
+  .flow-label {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text2);
+    font-style: italic;
+    margin: 4px 0 12px;
+  }
+
+  /* ── Quick Ref Table ── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .ref-table th {
+    background: var(--bg3);
+    color: var(--white);
+    font-weight: 600;
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .ref-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .ref-table tr:hover { background: rgba(108,140,255,0.04); }
+  .ref-table .mono { font-size: 11px; color: var(--accent); }
+
+  .footer {
+    text-align: center;
+    color: var(--text2);
+    font-size: 11px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<div class="header">
+  <h1>SOLID + 12 Design Patterns</h1>
+  <div class="sub">Payment Processing Engine — AT&T / Fiserv / CyberSource Domain</div>
+  <div class="tag-row">
+    <span class="tag tag-green">4 CREATIONAL</span>
+    <span class="tag tag-orange">4 STRUCTURAL</span>
+    <span class="tag tag-purple">4 BEHAVIORAL</span>
+    <span class="tag tag-pink">5 SOLID</span>
+  </div>
+</div>
+
+<!-- ═══════════════════ SOLID ═══════════════════ -->
+<div class="section">
+  <div class="section-title"><span class="num">§1</span> SOLID Principles — Where Each Lives in This Code</div>
+  <div class="solid-grid">
+
+    <div class="solid-card s">
+      <div class="solid-letter">S</div>
+      <div class="solid-name">Single Responsibility</div>
+      <div class="solid-desc">Each class does ONE thing. Config holds config. Processor processes. Validator validates. No god classes.</div>
+      <code class="solid-code">PaymentConfig → only config<br>CreditCardProcessor → only CC<br>EmailNotifier → only email</code>
+      <div class="solid-interview">💬 "PaymentConfig doesn't validate or charge — it only holds gateway URLs and timeouts."</div>
+    </div>
+
+    <div class="solid-card o">
+      <div class="solid-letter">O</div>
+      <div class="solid-name">Open / Closed</div>
+      <div class="solid-desc">Add new payment types WITHOUT modifying existing processors. Extend behavior, don't edit working code.</div>
+      <code class="solid-code">// Add CRYPTO:<br>class CryptoProcessor<br>&nbsp; implements PaymentProcessor<br>// + 1 factory case. Done.</code>
+      <div class="solid-interview">💬 "When AT&T added crypto, we added one class + one factory case. Zero changes to CC or ACH code."</div>
+    </div>
+
+    <div class="solid-card l">
+      <div class="solid-letter">L</div>
+      <div class="solid-name">Liskov Substitution</div>
+      <div class="solid-desc">Any PaymentProcessor subtype is safely substitutable. ACH in place of CC? The orchestrator doesn't break.</div>
+      <code class="solid-code">PaymentProcessor p = factory<br>&nbsp; .create("ACH");<br>p.charge(req); // works fine</code>
+      <div class="solid-interview">💬 "ACH, CC, Crypto — any is substitutable behind PaymentProcessor. The orchestrator never cares which."</div>
+    </div>
+
+    <div class="solid-card i">
+      <div class="solid-letter">I</div>
+      <div class="solid-name">Interface Segregation</div>
+      <div class="solid-desc">No fat interfaces. Chargeable, Refundable, Tokenizable are separate. ACH doesn't stub tokenize().</div>
+      <code class="solid-code">CC → Chargeable + Refundable<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ Tokenizable<br>ACH → Chargeable + Refundable<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(no Tokenizable!)</code>
+      <div class="solid-interview">💬 "ACH doesn't implement Tokenizable — it can't tokenize a bank account the way you tokenize a card."</div>
+    </div>
+
+    <div class="solid-card d">
+      <div class="solid-letter">D</div>
+      <div class="solid-name">Dependency Inversion</div>
+      <div class="solid-desc">High-level modules depend on abstractions. Orchestrator → PaymentProcessor interface, never a concrete class.</div>
+      <code class="solid-code">// Orchestrator depends on:<br>PaymentProcessor (interface)<br>// NOT on:<br>CreditCardProcessor (concrete)</code>
+      <div class="solid-interview">💬 "We swapped CyberSource→Fiserv without touching the orchestrator — it depends on abstractions."</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ PAYMENT FLOW ═══════════════════ -->
+<div class="section">
+  <div class="section-title"><span class="num">§2</span> Payment Flow — Where Each Pattern Sits</div>
+  <div class="flow-container">
+    <div class="flow-label">WEBCAPM React Frontend → REST API → Backend Payment Engine</div>
+
+    <div class="flow-row">
+      <div class="flow-box fb-green">Build Request<span class="flow-pattern">② BUILDER</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-purple">Validate<span class="flow-pattern">⑫ CHAIN</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-purple">Fraud Check<span class="flow-pattern">⑨ STRATEGY</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-green">Get Processor<span class="flow-pattern">③ FACTORY</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-cyan">Tokenize<span class="flow-pattern">⑧ PROXY (cache)</span></div>
+    </div>
+
+    <div class="flow-label">↓ validated &amp; tokenized</div>
+
+    <div class="flow-row">
+      <div class="flow-box fb-orange">Charge via Gateway<span class="flow-pattern">⑤ ADAPTER (legacy)<br>⑦ DECORATOR (log+retry)</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-purple">Settle<span class="flow-pattern">⑪ TEMPLATE METHOD</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-pink">Publish Event<span class="flow-pattern">⑩ OBSERVER</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box fb-yellow">Email + Ledger<br>+ Dashboard<span class="flow-pattern">⑩ OBSERVER listeners</span></div>
+    </div>
+
+    <div class="flow-label" style="margin-top: 16px;">Cross-cutting: ① SINGLETON (config) · ④ ABSTRACT FACTORY (gateway family) · ⑥ FACADE (orchestrates entire flow)</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ CREATIONAL ═══════════════════ -->
+<div class="section">
+  <div class="pattern-section creational">
+    <div class="pattern-section-head">
+      <span class="pattern-section-label">CREATIONAL</span>
+      <span class="pattern-section-name">How objects are created</span>
+    </div>
+    <div class="patterns-grid">
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 01</div>
+        <div class="p-name">Singleton</div>
+        <div class="p-class">PaymentConfig</div>
+        <div class="p-what"><strong>What:</strong> One instance, globally accessible, thread-safe (Bill Pugh holder idiom).</div>
+        <div class="p-why"><strong>Why:</strong> Multiple config objects = contradictory gateway URLs. One source of truth.</div>
+        <div class="p-interview">💬 "Singleton for gateway config — one source of truth for Fiserv URLs, merchant IDs, timeouts."</div>
+      </div>
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 02</div>
+        <div class="p-name">Builder</div>
+        <div class="p-class">PaymentRequest.Builder</div>
+        <div class="p-what"><strong>What:</strong> Fluent, step-by-step construction of a complex immutable object.</div>
+        <div class="p-why"><strong>Why:</strong> 8+ fields. A constructor with 8 params is unreadable. Builder validates before build().</div>
+        <div class="p-interview">💬 "PaymentRequest has 8 fields — amount, token, merchant ID. Builder makes it readable and validates before the object exists."</div>
+      </div>
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 03</div>
+        <div class="p-name">Factory Method</div>
+        <div class="p-class">PaymentProcessorFactory</div>
+        <div class="p-what"><strong>What:</strong> Static method decides which concrete class to instantiate by type.</div>
+        <div class="p-why"><strong>Why:</strong> Caller says "CREDIT_CARD" → gets CreditCardProcessor. Never uses <code>new</code> directly.</div>
+        <div class="p-interview">💬 "Adding crypto? One new class + one factory case. Existing CC and ACH code untouched — Open/Closed."</div>
+      </div>
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 04</div>
+        <div class="p-name">Abstract Factory</div>
+        <div class="p-class">GatewayFactory</div>
+        <div class="p-what"><strong>What:</strong> Creates a <em>family</em> of related objects (processor + tokenizer + settlement).</div>
+        <div class="p-why"><strong>Why:</strong> Fiserv processor MUST pair with Fiserv tokenizer. Mixing families = runtime disaster.</div>
+        <div class="p-interview">💬 "When we switched CyberSource→Fiserv, we swapped ONE factory. Every downstream got the new family — no mix-ups."</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ STRUCTURAL ═══════════════════ -->
+<div class="section">
+  <div class="pattern-section structural">
+    <div class="pattern-section-head">
+      <span class="pattern-section-label">STRUCTURAL</span>
+      <span class="pattern-section-name">How objects are composed</span>
+    </div>
+    <div class="patterns-grid">
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 05</div>
+        <div class="p-name">Adapter</div>
+        <div class="p-class">LegacyCyberSourceAdapter</div>
+        <div class="p-what"><strong>What:</strong> Makes an incompatible old interface work with a new one.</div>
+        <div class="p-why"><strong>Why:</strong> CyberSource SOAP client has runTransaction(soapEnvelope). New system expects charge(PaymentRequest). Adapter translates.</div>
+        <div class="p-interview">💬 "During migration, Adapter let the new REST orchestrator talk to legacy SOAP without changing either side."</div>
+      </div>
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 06</div>
+        <div class="p-name">Facade</div>
+        <div class="p-class">PaymentFacade</div>
+        <div class="p-what"><strong>What:</strong> Simplified entry point to a complex multi-step subsystem.</div>
+        <div class="p-why"><strong>Why:</strong> WEBCAPM "Save" button → one endpoint → facade orchestrates validate→fraud→tokenize→charge→settle.</div>
+        <div class="p-interview">💬 "React frontend calls ONE endpoint. Facade orchestrates 6 steps behind the scenes."</div>
+      </div>
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 07</div>
+        <div class="p-name">Decorator</div>
+        <div class="p-class">LoggingDecorator<br>RetryDecorator</div>
+        <div class="p-what"><strong>What:</strong> Wraps an object to add behavior without modifying its code. Composable.</div>
+        <div class="p-why"><strong>Why:</strong> retry(logging(processor)) — each adds one concern. Processor code stays clean.</div>
+        <div class="p-interview">💬 "Logging and retry are decorators, not if-blocks inside the processor. They compose: retry wraps logging wraps processor."</div>
+      </div>
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 08</div>
+        <div class="p-name">Proxy</div>
+        <div class="p-class">TokenizationCacheProxy</div>
+        <div class="p-what"><strong>What:</strong> Controls access to a real object — adds caching, lazy-loading, or access control.</div>
+        <div class="p-why"><strong>Why:</strong> Same card tokenized repeatedly in AutoPay re-enrollment. Proxy caches → no redundant gateway calls.</div>
+        <div class="p-interview">💬 "Proxy caches tokenization so repeated calls for the same card don't hit Fiserv again — critical for AutoPay."</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ BEHAVIORAL ═══════════════════ -->
+<div class="section">
+  <div class="pattern-section behavioral">
+    <div class="pattern-section-head">
+      <span class="pattern-section-label">BEHAVIORAL</span>
+      <span class="pattern-section-name">How objects communicate</span>
+    </div>
+    <div class="patterns-grid">
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 09</div>
+        <div class="p-name">Strategy</div>
+        <div class="p-class">FraudStrategy</div>
+        <div class="p-what"><strong>What:</strong> Family of interchangeable algorithms. Swap at runtime without changing the caller.</div>
+        <div class="p-why"><strong>Why:</strong> High-value → ML-based fraud check. Low-value → velocity check. Engine doesn't hardcode which.</div>
+        <div class="p-interview">💬 "Fraud strategies are pluggable — velocity for small, ML for large. Engine receives its strategy, doesn't choose it."</div>
+      </div>
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 10</div>
+        <div class="p-name">Observer</div>
+        <div class="p-class">PaymentEventPublisher</div>
+        <div class="p-what"><strong>What:</strong> When something happens, notify all interested listeners automatically.</div>
+        <div class="p-why"><strong>Why:</strong> Payment approved → email + ledger + dashboard + settlement, all independently subscribed. Same idea as Kafka pub/sub.</div>
+        <div class="p-interview">💬 "Observer decouples events from actions. At infra scale, this is exactly what our Kafka pipelines do."</div>
+      </div>
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 11</div>
+        <div class="p-name">Template Method</div>
+        <div class="p-class">AbstractSettlementProcessor</div>
+        <div class="p-what"><strong>What:</strong> Defines algorithm skeleton in base class. Subclasses override specific steps, not the flow.</div>
+        <div class="p-why"><strong>Why:</strong> Settlement always: validate→prepare→execute→confirm. Fiserv/CyberSource override steps, not sequence.</div>
+        <div class="p-interview">💬 "Template Method locks the settlement sequence. Fiserv and CyberSource override steps, never the flow."</div>
+      </div>
+
+      <div class="p-card">
+        <div class="p-num">PATTERN 12</div>
+        <div class="p-name">Chain of Responsibility</div>
+        <div class="p-class">ValidationHandler chain</div>
+        <div class="p-what"><strong>What:</strong> Request passes through a chain of handlers. Each passes or rejects.</div>
+        <div class="p-why"><strong>Why:</strong> Amount→Token→Merchant→Idempotency. Each independent, composable, reorderable.</div>
+        <div class="p-interview">💬 "Validation is a chain — amount, card token, merchant whitelist, idempotency. Reorder or extend without touching handlers."</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ QUICK REF TABLE ═══════════════════ -->
+<div class="section">
+  <div class="section-title"><span class="num">§3</span> Quick Reference — One-Line Each</div>
+  <table class="ref-table">
+    <thead>
+      <tr><th>#</th><th>Type</th><th>Pattern</th><th>Class</th><th>One-Sentence Summary</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td style="color:var(--green)">C</td><td>Singleton</td><td class="mono">PaymentConfig</td><td>One config instance, thread-safe (Bill Pugh holder)</td></tr>
+      <tr><td>2</td><td style="color:var(--green)">C</td><td>Builder</td><td class="mono">PaymentRequest.Builder</td><td>Fluent construction of immutable 8-field payment requests</td></tr>
+      <tr><td>3</td><td style="color:var(--green)">C</td><td>Factory Method</td><td class="mono">PaymentProcessorFactory</td><td>"CREDIT_CARD" → CreditCardProcessor. Never use new directly</td></tr>
+      <tr><td>4</td><td style="color:var(--green)">C</td><td>Abstract Factory</td><td class="mono">GatewayFactory</td><td>Creates consistent families — Fiserv or CyberSource, never mixed</td></tr>
+      <tr><td>5</td><td style="color:var(--orange)">S</td><td>Adapter</td><td class="mono">LegacyCyberSourceAdapter</td><td>SOAP runTransaction() → REST charge(). Old ↔ new bridge</td></tr>
+      <tr><td>6</td><td style="color:var(--orange)">S</td><td>Facade</td><td class="mono">PaymentFacade</td><td>One method hides validate→fraud→tokenize→charge→settle</td></tr>
+      <tr><td>7</td><td style="color:var(--orange)">S</td><td>Decorator</td><td class="mono">LoggingDecorator, RetryDecorator</td><td>retry(logging(processor)) — composable cross-cutting concerns</td></tr>
+      <tr><td>8</td><td style="color:var(--orange)">S</td><td>Proxy</td><td class="mono">TokenizationCacheProxy</td><td>Cache tokenization results → no redundant gateway calls</td></tr>
+      <tr><td>9</td><td style="color:var(--purple)">B</td><td>Strategy</td><td class="mono">FraudStrategy</td><td>Swap fraud algorithm at runtime (velocity / rule / ML)</td></tr>
+      <tr><td>10</td><td style="color:var(--purple)">B</td><td>Observer</td><td class="mono">PaymentEventPublisher</td><td>Approved → email + ledger + dashboard. Same idea as Kafka</td></tr>
+      <tr><td>11</td><td style="color:var(--purple)">B</td><td>Template Method</td><td class="mono">AbstractSettlementProcessor</td><td>Fixed flow: validate→prepare→execute→confirm. Override steps, not sequence</td></tr>
+      <tr><td>12</td><td style="color:var(--purple)">B</td><td>Chain of Responsibility</td><td class="mono">ValidationHandler</td><td>Amount→Token→Merchant→Idempotency. Reorder without touching handlers</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  PaymentEngine.java · Verified on Java 21 · All 12 patterns compile and run as one file
+</div>
+
+</body>
+</html>
